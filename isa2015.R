@@ -5,7 +5,7 @@ library("twitteR")
 library("ggplot2")
 
 # read data
-isa2015df <- read.csv("./repo/isa2015_tweets.csv")
+isa2015df <- read.csv("isa2015_tweets.csv")
 
 ################
 # Clean tweets #
@@ -168,3 +168,51 @@ ggplot(plotData) +
   geom_text(label = "Day 4", aes(x = as.POSIXct("2015-02-21 13:00:00 UTC"), y = 300), size = 4)
 
 dev.off()
+
+#######################
+# Language processing #
+#######################
+
+# get text body
+isa_text <- gettext(isa2015df$text)
+
+# clean text
+
+# remove non-ascii characters
+isa_text <- gsub("[^\x20-\x7E]", "", isa_text)
+# remove html links, h/t http://stackoverflow.com/questions/25352448/remove-urls-from-string-in-r
+isa_text <- gsub("(f|ht)(tp)(s?)(://)(.*)[.|/](.*)", "", isa_text)
+# remove @people
+isa_text <- gsub("@\\w+", "", isa_text)
+# remove punctuation
+isa_text <- gsub("[[:punct:]]", " ", isa_text)
+# remove numbers
+isa_text <- gsub("[[:digit:]]", "", isa_text)
+# remove "RT"
+isa_text <- gsub("RT", "", isa_text)
+# remove "amp" 
+isa_text <- gsub(" amp ", "", isa_text)
+# remove "amp" 
+isa_text <- gsub(" http ", "", isa_text)
+
+# create corpus
+isa_corpus <- Corpus(VectorSource(isa_text))
+
+tdm <- TermDocumentMatrix(isa_corpus,
+                          control = list(removePunctuation = TRUE,
+                                         stopwords = c("#isa2015", "isa", "isa2015", 
+                                                       "ISA", "amp", "http", stopwords("english")),
+                                         removeNumbers = TRUE, tolower = TRUE))
+
+# define tdm as matrix
+m <- as.matrix(tdm)
+# get word counts in decreasing order
+word_freqs <- sort(rowSums(m), decreasing = TRUE) 
+# create a data frame with words and their frequencies
+dm <- data.frame(word=names(word_freqs), freq = word_freqs)
+
+# correlation plot of "coffee"
+CairoPNG("termcorr_coffee.png", height=900, width = 1600, pointsize=30)
+termcorr("coffee")
+dev.off()
+
