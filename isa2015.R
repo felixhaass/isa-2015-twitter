@@ -3,8 +3,11 @@ library("Cairo")
 library("ROAuth")
 library("twitteR")
 library("ggplot2")
+library("RCurl")
 
 # read data
+# the 'download.file' command might only work on Windows platforms.
+download.file("https://raw.githubusercontent.com/felixhaass/isa-2015-twitter/master/isa2015_tweets.csv", destfile = "isa2015_tweets.csv")isa2015df <- read.csv(text = tweets_csv)
 isa2015df <- read.csv("isa2015_tweets.csv")
 
 ################
