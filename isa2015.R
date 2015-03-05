@@ -214,6 +214,28 @@ word_freqs <- sort(rowSums(m), decreasing = TRUE)
 # create a data frame with words and their frequencies
 dm <- data.frame(word=names(word_freqs), freq = word_freqs)
 
+# termcorr() function taken from Jay Ulfelder:
+# https://github.com/ulfelder/national-security-strategy/blob/master/nss.explore.R
+
+termcorr <- function(term2, corr = 0.2) {
+  require(Hmisc)
+  # Get a vector of correlation coefficients for terms above 0.5
+  z <- findAssocs(tdm, term2, corr)
+  if(is.matrix(z)) {
+    # Make a dot plot of the results, limited to top 10
+    dotchart2(z[1:length(z)],
+              labels = dimnames(z)[[1]],
+              lines = TRUE, lwd = 0.05, lty = 3,
+              sort = FALSE,
+              dotsize = 1.25, pch = 20, col = "firebrick2",
+              cex.labels = 1,
+              xlim = c(0,max(z+0.1)))
+    title(main = list(term2, cex = 1.25))
+  } else {
+    stop("No or not enough correlation results!")
+  }
+}
+
 # correlation plot of "coffee"
 CairoPNG("termcorr_coffee.png", height=900, width = 1600, pointsize=30)
 termcorr("coffee")
